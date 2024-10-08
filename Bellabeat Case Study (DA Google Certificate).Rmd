@@ -1,0 +1,496 @@
+---
+title: "Bellabeat Case Study (DA Google Certificate)"
+author: "Pablo Viruell"
+date: "2024-10-08"
+output:
+    github_document:
+    df_print: paged
+---
+
+# Bellabeat Case Study (Google Data Analytics Certificate)
+
+The following document shows the cleaning and analyzing steps made for Google's Bellabeat case study.
+
+#### Step 1. Load the necessary packages
+
+```{r include=FALSE}
+library(tidyverse) #system of packages useful for data analysis
+library(readr) #data import
+library(tidyr) #data cleaning
+library(janitor) #data manipulation
+library (plyr) #data manipulation
+library (dplyr) #data manipulation
+library(lubridate) #datetime manipulation
+library(ggplot2) #data visualizations
+library(cowplot) #data visualization features
+```
+
+#### Step 2. Import the data
+
+```{r eval=FALSE, include=FALSE}
+#Setting a working directory
+setwd("C:/Amryt/Data Analytics/Case study/BellaBeat case study/Fitabase Data 4.12.16-5.12.16")
+#Importing the data 
+daily_activity <- read.csv("dailyActivity_merged.csv")
+hourly_calories <- read.csv("hourlyCalories_merged.csv")
+hourly_steps <- read.csv("hourlySteps_merged.csv")
+sleep <- read.csv("SleepDay_merged.csv")
+weight <- read.csv("weightLogInfo_merged.csv")
+```
+
+#### Step 3. Clean the data
+
+*3.1 Checking for NA values and duplicates*
+
+```{r}
+#Checking for NA values
+sum(is.na(daily_activity))
+sum(is.na(hourly_calories))
+sum(is.na(hourly_steps))
+sum(is.na(sleep))
+sum(is.na(weight))
+
+#Checking for duplicates
+sum(duplicated(daily_activity))
+sum(duplicated(hourly_calories))
+sum(duplicated(hourly_steps))
+sum(duplicated(sleep))
+sum(duplicated(weight))
+
+#Dropping the duplicate values found in table "sleep"
+sleep <- unique(sleep)
+
+#Verifying duplicate values were dropped
+sum(duplicated(sleep))
+```
+
+*3.2 Checking data content and format*
+
+```{r}
+#Checking the number of unique users in each table
+n_distinct(daily_activity$Id)
+n_distinct(hourly_calories$Id)
+n_distinct(hourly_steps$Id)
+n_distinct(sleep$Id)
+n_distinct(weight$Id)
+```
+
+Given the small amount of unique users in the table "weight", no reliable insights will be obtained. Therefore, it will be dropped from the analysis.
+
+```{r}
+#Reviewing the content of each remaining table
+head(daily_activity)
+head(hourly_calories)
+head(hourly_steps)
+head(sleep)
+
+#Reviewing the format of each table
+str(daily_activity)
+str(hourly_calories)
+str(hourly_steps)
+str(sleep)
+```
+
+*3.3 Make necessary corrections to data format*
+
+```{r}
+#Renaming the table columns
+daily_activity <- rename(daily_activity, Date= ActivityDate)
+hourly_calories <- rename(hourly_calories, Datetime= ActivityHour)
+hourly_steps <- rename(hourly_steps, Datetime= ActivityHour)
+sleep <- rename(sleep, Date= SleepDay)
+
+#Deleting the time section in the "sleep" table
+sleep$Date <- gsub("12:00:00 AM", "", sleep$Date)
+
+#Converting character format to date format
+daily_activity$Date <- as_date(daily_activity$Date, format="%m/%d/%Y")
+sleep$Date <- mdy(sleep$Date)
+
+#Converting character format to POSIXct format
+hourly_calories$Datetime <- convert_to_datetime(hourly_calories$Datetime, tz="UTC", character_fun = lubridate::mdy_hms)
+hourly_steps$Datetime <- convert_to_datetime(hourly_steps$Datetime, tz="UTC", character_fun = lubridate::mdy_hms)
+
+#Splitting the datetime columns
+hourly_calories$Time <- format(as.POSIXct(hourly_calories$Datetime), format="%H:%M:%S")
+hourly_calories$Date <- as.Date(hourly_calories$Datetime)
+hourly_steps$Time <- format(as.POSIXct(hourly_steps$Datetime), format="%H:%M:%S")
+hourly_steps$Date <- as.Date(hourly_steps$Datetime)
+
+#Converting number format to character format
+daily_activity$Id <- as.character(daily_activity$Id)
+sleep$Id <- as.character(sleep$Id)
+hourly_calories$Id <- as.character(hourly_calories$Id)
+hourly_steps$Id <- as.character(hourly_steps$Id)
+```
+
+*3.4 Merge the data to facilitate its future use*
+
+```{r}
+#Merging the daily data
+daily_data <- merge(daily_activity, sleep, by=c("Id", "Date"), all=TRUE)
+```
+
+*3.5 Create a new Weekday column, which will be useful for future analysis*
+
+```{r}
+daily_data <- daily_data %>%
+  mutate(Weekday=wday(daily_data$Date, label=TRUE, abbr=FALSE, locale="UTC"))
+```
+
+#### Step 4. Analyze the data
+
+*4.1 Basic Statistics*
+
+```{r}
+#Calculating basic statistics
+summary(daily_data)
+summary(sleep)
+```
+
+*4.2. Review and plot data by day of the week*
+
+```{r}
+#Number of data entries per weekday
+ggplot(daily_data, aes(x=Weekday))+
+  geom_bar(fill="orangered1")+
+  labs(title="Data recorded per weekday",
+       x=NULL,
+       y="Number of data entries")+
+  geom_text(aes(label=after_stat(count)),
+            stat="count",
+            size=3,
+            position=position_stack(vjust=1.05))
+
+#Average steps per weekday
+daily_data %>%
+  group_by(Weekday) %>%
+  summarise(Mean_Steps=mean(TotalSteps)) %>%
+  ggplot(aes(x=Weekday,
+             y=Mean_Steps))+
+  geom_col(fill="lightblue")+
+  labs(title="Average steps taken per weekday",
+       x=NULL,
+       y="Average Steps")+
+  geom_text(aes(label=ceiling(Mean_Steps)),
+            size=3,
+            hjust=0.5,
+            position=position_stack(vjust=1.05))
+
+#Minutes asleep per weekday
+daily_data %>%
+  group_by(Weekday) %>%
+  summarise(Mean_Asleep=mean(TotalMinutesAsleep, na.rm=TRUE)) %>%
+  ggplot(aes(x=Weekday,
+             y=Mean_Asleep))+
+  geom_col(fill="lightgreen")+
+  labs(title="Average time asleep per weekday",
+       x=NULL,
+       y="Minutes Asleep")+
+  geom_text(aes(label=ceiling(Mean_Asleep)),
+            size=3,
+            hjust=0.5,
+            position=position_stack(vjust=1.05))
+```
+
+To plot the activity level per weekday, some data manipulation is needed first.
+
+```{r}
+#Create a new data frame with average intensity data
+Intensity_mean <- daily_data %>%
+  group_by(Weekday) %>%
+  summarise(mean_very_active=mean(VeryActiveMinutes),
+            mean_fairly_active=mean(FairlyActiveMinutes),
+            mean_lightly_active=mean(LightlyActiveMinutes),
+            mean_sedentary=mean(SedentaryMinutes))
+Intensity_mean <- Intensity_mean %>%
+  mutate_if(is.numeric, round)
+
+#Reshape data frame from wide to long format
+Intensity_mean_long <- pivot_longer(Intensity_mean,
+                                    cols=c("VeryActiveMinutes","FairlyActiveMinutes", "LightlyActiveMinutes", "SedentaryMinutes"), 
+                                    names_to = "Activity_Level",
+                                    values_to = "Mean_Minutes")
+
+#Calculate the percentage of minutes for each activity level per day
+Intensity_mean_long=ddply(Intensity_mean_long, .(Weekday), transform, Ratio=Mean_Minutes/sum(Mean_Minutes)*100)
+Intensity_mean_long$Daily_Percent=paste0(sprintf(Intensity_mean_long$Ratio), "%")
+```
+
+With the data ready, we can plot activity level per weekday.
+
+```{r}
+#Defining the order in which the activity level should appear in the plot
+Intensity_mean_long$Activity_Level <- factor(Intensity_mean_long$Activity_Level,levels=c("mean_sedentary", "mean_lightly_active", "mean_fairly_active", "mean_very_active"))
+
+#Plotting activity level per weekday
+ggplot(Intensity_mean_long, aes(x=Weekday,
+                                y=Mean_Minutes,
+                                fill=Activity_Level))+
+  geom_col()+
+  labs(title="Activity Level per Weekday",
+       x=NULL,
+       y="Minutes")+
+  guides(fill=guide_legend(title="Activity Level"))+
+  scale_fill_discrete(labels=c("Very Active",
+                               "Fairly Active",
+                               "Lightly Active",
+                               "Sedentary"))+
+  geom_text(aes(label=ifelse(Mean_Minutes>100, Daily_Percent, '')), 
+            size=3,
+            hjust=0.5,
+            position=position_stack(vjust=0.5))+
+  geom_text(aes(label=after_stat(y), group=Weekday),
+            stat="summary", fun=sum, vjust=1)
+```
+
+*4.3 Review and plot hourly data*
+
+```{r}
+#Average Hourly Steps
+hourly_steps %>%
+  group_by(Time) %>%
+  summarise(Average_Steps=mean(StepTotal)) %>%
+  ggplot(aes(x=Time,
+             y=Average_Steps,
+             fill=Average_Steps))+
+  geom_col()+
+  labs(title="Average Step Distribution per Hour",
+       x=NULL,
+       y="Average Steps",
+       fill=NULL)+
+  theme(axis.text.x=element_text(angle=90))+
+  scale_fill_viridis_c()
+
+#Average Hourly Calories
+hourly_calories %>%
+  group_by(Time) %>%
+  summarise(Average_Calories=mean(Calories)) %>%
+  ggplot(aes(x=Time,
+             y=Average_Calories,
+             fill=Average_Calories))+
+  geom_col()+
+  labs(title="Average Calorie Distribution per Hour",
+       x=NULL,
+       y="Average Calories",
+       fill=NULL)+
+  theme(axis.text.x=element_text(angle=90))+
+  scale_fill_viridis_c()
+```
+
+*4.4 Review and plot individual data*
+
+```{r}
+#Calories vs Total steps
+ggplot(daily_data, aes(x=TotalSteps,
+                       y=Calories,
+                       color=VeryActiveMinutes))+
+  geom_point()+
+  geom_smooth(method="loess")+
+  scale_color_gradient(low="green", high="red")+
+  labs(title="Calories vs Total Steps per Day",
+       x="Total Steps",
+       caption="Based on daily data")
+
+#Activity Minutes vs Total steps for each activity level
+ggplot(daily_data)+
+  #Very Active Minutes
+  geom_point(aes(x=TotalSteps,
+                 y=VeryActiveMinutes),
+             color="navy")+ 
+  geom_smooth(method="loess", aes(x=TotalSteps,
+                                  y=VeryActiveMinutes),
+              color="navy")+
+  #Fairly Active Minutes
+  geom_point(aes(x=TotalSteps,
+                 y=FairlyActiveMinutes),
+             color="orange4")+
+  geom_smooth(method="loess", aes(x=TotalSteps,
+                                  y=FairlyActiveMinutes),
+              color="orange4")+
+  #Lightly Active Minutes
+  geom_point(aes(x=TotalSteps,
+                 y=LightlyActiveMinutes),
+             color="chartreuse4")+
+  geom_smooth(method="loess", aes(x=TotalSteps,
+                                  y=LightlyActiveMinutes),
+              color="chartreuse4")+
+  #Sedentary Minutes
+  geom_point(aes(x=TotalSteps,
+                 y=SedentaryMinutes),
+             color="deeppink4")+
+  geom_smooth(method="loess", aes(x=TotalSteps,
+                                  y=SedentaryMinutes),
+              color="deeppink4")+
+  labs(title="Activity Minutes vs Daily Steps",
+       x="Total Daily Steps",
+       y="Daily Activity Minutes")+
+  annotate("text", x=30000,
+           y=175,
+           label="Very Active",
+           fontface="italic",
+           color="navy",
+           size=3)+
+  annotate("text", x=30000,
+           y=70,
+           label="Fairly Active",
+           fontface="italic",
+           color="orange4",
+           size=3)+
+  annotate("text", x=30000,
+           y=275,
+           label="Lightly Active",
+           fontface="italic",
+           color="chartreuse4",
+           size=3)+
+  annotate("text", x=30000,
+           y=1075,
+           label="Sedentary",
+           fontface="italic",
+           color="deeppink4",
+           size=3)
+
+#Activity Minutes vs Calories for each activity level
+ggplot(daily_data)+
+  #Very Active Minutes
+  geom_point(aes(x=Calories,
+                 y=VeryActiveMinutes),
+             color="navy")+
+  geom_smooth(method="loess", aes(x=Calories,
+                                  y=VeryActiveMinutes),
+              color="navy")+
+  #Fairly Active Minutes
+  geom_point(aes(x=Calories,
+                 y=FairlyActiveMinutes),
+             color="orange4")+
+  geom_smooth(method="loess", aes(x=Calories,
+                                  y=FairlyActiveMinutes),
+              color="orange4")+
+  #Lightly Active Minutes
+  geom_point(aes(x=Calories,
+                 y=LightlyActiveMinutes),
+             color="chartreuse4")+
+  geom_smooth(method="loess", aes(x=Calories,
+                                  y=LightlyActiveMinutes),
+              color="chartreuse4")+
+  #Sedentary Minutes
+  geom_point(aes(x=Calories,
+                 y=SedentaryMinutes),
+             color="deeppink4")+
+  geom_smooth(method="loess", aes(x=Calories,
+                                  y=SedentaryMinutes),
+              color="deeppink4")+
+  labs(title="Activity Minutes vs Calories",
+       x="Daily Calories",
+       y="Daily Activity Minutes")+
+  annotate("text", x=4850,
+           y=125,
+           label="Very Active",
+           fontface="italic",
+           color="navy",
+           size=3)+
+  annotate("text", x=4850,
+           y=-25,
+           label="Fairly Active",
+           fontface="italic",
+           color="orange4",
+           size=3)+
+  annotate("text", x=4850,
+           y=280,
+           label="Lightly Active",
+           fontface="italic",
+           color="chartreuse4",
+           size=3)+
+  annotate("text", x=4850,
+           y=480,
+           label="Sedentary",
+           fontface="italic",
+           color="deeppink4",
+           size=3)
+
+#Time Asleep vs Sedentary Minutes
+ggplot(daily_data)+
+  geom_point(aes(x=TotalMinutesAsleep,
+                 y=SedentaryMinutes))+
+  geom_smooth(method="loess", aes(x=TotalMinutesAsleep,
+                                  y=SedentaryMinutes))+
+  labs(title="Sleep Time vs Sedentary Minutes",
+       x="Daily Total Minutes Asleep",
+       y="Sedentary Minutes",
+       caption="Based on reported data. NA values not considered")+
+  annotate("text", x=750,
+           y=350,
+           label="italic(R)^2==0.3597",
+           parse=TRUE,
+           size=3)
+```
+
+Based on the Time Asleep vs Sedentary Minutes plot, it seems like there might be a relationship between the variables. Therefore, we evaluate if true via a linear regression analysis.
+
+```{r}
+#Linear Regression analysis for Time Asleep vs Sedentary Minutes
+Asleep_vs_Sedentary <- lm(TotalMinutesAsleep ~ SedentaryMinutes, data=daily_data)
+
+summary(Asleep_vs_Sedentary)
+```
+
+*4.5 Review the user distribution based on activity level*
+
+Based on a research study by Catrine Tudor-Locke and David Bassett Jr, who propose an index for classification of physical activity based on pedometer measurements, we can, for analysis purposes, establish a classification that fits the four activity levels available in our data.
+
+\< 5,000 steps/day -- Sedentary Lifestyle
+
+5,000 - 7,499 steps/day -- Lightly Active Lifestyle
+
+7,500 - 10,000 steps/day -- Fairly Active Lifestyle
+
+\> 10,000 steps/day -- Very Active Lifestyle
+
+```{r}
+#Creating a data frame with average individual data
+average_individual_data <- daily_data %>%
+  group_by(Id) %>%
+  summarise(av_steps=mean(TotalSteps),
+            av_calories=mean(Calories),
+            av_sleep=mean(TotalMinutesAsleep, na.rm=TRUE))
+
+#Classifying users by level of intensity based on average daily steps
+average_individual_data <- average_individual_data %>%
+  mutate(user_class=case_when(
+    av_steps < 5000 ~ "Sedentary",
+    av_steps >= 5000 & av_steps < 7500 ~ "Lightly Active",
+    av_steps >= 7500 & av_steps < 10000 ~ "Fairly Active",
+    av_steps >= 10000 ~ "Very Active"))
+
+#Checking the percentage of users in each class 
+user_activity_class <- average_individual_data %>%
+  group_by(user_class) %>%
+  summarise(user_count=n()) %>%
+  mutate(user_percentage=user_count/sum(user_count)*100)
+
+user_activity_class$user_percentage=paste0(sprintf("%2.1f", user_activity_class$user_percentage), "%")
+
+#Plotting activity class percentage
+ggplot(user_activity_class, aes(x="",
+                                y=user_percentage,
+                                fill=user_class))+
+  geom_col()+
+  coord_polar("y", start=0)+
+  geom_text(aes(label=user_percentage),
+            position=position_stack(vjust=0.5),
+            size=3)+
+  guides(fill=guide_legend(title="User Class"))+
+  scale_fill_discrete(breaks=c("Lightly Active",
+                               "Fairly Active",
+                               "Sedentary",
+                               "Very Active"))+
+  theme_void()
+```
+
+#### Data frame summary
+
+```{r}
+project_data_frames <- data.frame(Initial_data_frames=c("daily_activity", "daily_calories", "daily_intensities", "daily_steps", "hourly_calories", "hourly_steps", "sleep", "weight","","",""), Final_data_frames=c("daily_activity", "daily_calories", "daily_intensities", "daily_steps", "hourly_calories", "hourly_steps", "sleep", "average_individual_data", "daily_data", "Intensity_mean", "Intensity_mean_long"))
+library(knitr)
+kable(project_data_frames, caption="Data frames summary")
+```
