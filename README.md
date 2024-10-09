@@ -33,6 +33,19 @@ The dataset is comprised of 18 CSV files. A ROCCC analysis of the data is possib
 **C** - Current: **LOW**. The data is from 8 years ago, and has not been updated since. The results derived from the analysis will not reflect the current trends.
 
 **C** - Cited: **MED**. The data's origin is clearly stated, but as a public, third-party provided dataset, the possibility of uncited changes is to be taken into account.
+![Data recorded per weekday](https://github.com/user-attachments/assets/7b5332b6-1ec2-445c-a8b7-f7de477f2009)
+![Average steps taken per weekday](https://github.com/user-attachments/assets/c88b914d-dcc5-4cbe-8aa3-476f9cf70aca) 
+![Average time asleep per weekday](https://github.com/user-attachments/assets/c423670f-d599-4a46-9c13-19ad8ec98f76) 
+![High Activity minutes per day of week](https://github.com/user-attachments/assets/fa686a53-4427-4ae7-99e7-7d1c98d46112) 
+![Activity Level per Weekday](https://github.com/user-attachments/assets/cf495c41-6deb-405d-9c1e-543c56d754c1) 
+![Average Calorie Distribution per Hour](https://github.com/user-attachments/assets/46cff603-42a3-431d-8da7-35a1ae05ac84) 
+![Average Step Distribution per Hour](https://github.com/user-attachments/assets/c8df7818-1627-428a-97db-424d6f6c2f60) 
+![Calories vs Total Steps](https://github.com/user-attachments/assets/c007a76e-4e67-4c28-a00a-736afe8dd37f) 
+![Activity Minutes vs Calories](https://github.com/user-attachments/assets/2ab762c1-9572-41d1-bc89-750eae0d48f5) 
+![Activity Minutes vs Daily Steps](https://github.com/user-attachments/assets/70b5e8fe-30e1-4a8b-8497-210f7e0ac332) 
+![Sleep Time vs Sedentary Minutes](https://github.com/user-attachments/assets/4cb49a23-d983-4901-a401-c5657ef93fd8) 
+![User Distribution based on Activity Level](https://github.com/user-attachments/assets/e2f64542-d6a4-4694-8d31-2371797b0a9d) 
+
 
 ## Stage 3 - Process
 
