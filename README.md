@@ -33,14 +33,6 @@ The dataset is comprised of 18 CSV files. A ROCCC analysis of the data is possib
 **C** - Current: **LOW**. The data is from 8 years ago, and has not been updated since. The results derived from the analysis will not reflect the current trends.
 
 **C** - Cited: **MED**. The data's origin is clearly stated, but as a public, third-party provided dataset, the possibility of uncited changes is to be taken into account.
-![Average time asleep per weekday](https://github.com/user-attachments/assets/c423670f-d599-4a46-9c13-19ad8ec98f76) 
-![High Activity minutes per day of week](https://github.com/user-attachments/assets/fa686a53-4427-4ae7-99e7-7d1c98d46112) 
-![Activity Level per Weekday](https://github.com/user-attachments/assets/cf495c41-6deb-405d-9c1e-543c56d754c1) 
-![Average Calorie Distribution per Hour](https://github.com/user-attachments/assets/46cff603-42a3-431d-8da7-35a1ae05ac84) 
-![Average Step Distribution per Hour](https://github.com/user-attachments/assets/c8df7818-1627-428a-97db-424d6f6c2f60) 
-![Calories vs Total Steps](https://github.com/user-attachments/assets/c007a76e-4e67-4c28-a00a-736afe8dd37f) 
-![Activity Minutes vs Calories](https://github.com/user-attachments/assets/2ab762c1-9572-41d1-bc89-750eae0d48f5) 
-![Activity Minutes vs Daily Steps](https://github.com/user-attachments/assets/70b5e8fe-30e1-4a8b-8497-210f7e0ac332) 
 ![Sleep Time vs Sedentary Minutes](https://github.com/user-attachments/assets/4cb49a23-d983-4901-a401-c5657ef93fd8) 
 ![User Distribution based on Activity Level](https://github.com/user-attachments/assets/e2f64542-d6a4-4694-8d31-2371797b0a9d) 
 
@@ -218,7 +210,7 @@ ggplot(daily_data, aes(x=Weekday))+
 ```
 ![Data recorded per weekday](https://github.com/user-attachments/assets/7b5332b6-1ec2-445c-a8b7-f7de477f2009)
 
-Based on this plot, we notice that data recordings are significantly higher from Tuesdays to Thursdays, while the rest of the week keep a consistent number of recordings. This brings up the question of the reason behind this. However, given the data's third-party origin, it will be hard to find proof to make our speculations any more than that. Therefore, the results in this analysis should not be taken as absolute and definitive. This discovery further confirms the need to make a future analysis with more recent and realiable data. 
+Based on this plot, we notice that data recordings are significantly higher from Tuesdays to Thursdays, while the rest of the week keep a consistent number of recordings. This brings up the question of the reason behind this. However, given the data's third-party origin, it will be hard to find proof to make our speculations any more than that. Therefore, the results in this analysis should not be taken as absolute and definitive. This discovery further confirms the need to make a future analysis with more recent and reliable data. 
 
 Other relevant weekly data:
 
@@ -238,6 +230,124 @@ daily_data %>%
             hjust=0.5,
             position=position_stack(vjust=1.05))
 ```
-![Average steps taken per weekday](https://github.com/user-attachments/assets/c88b914d-dcc5-4cbe-8aa3-476f9cf70aca) 
+![Average steps taken per weekday](https://github.com/user-attachments/assets/c88b914d-dcc5-4cbe-8aa3-476f9cf70aca)
 
+Tuesday and Saturdays are the days when the users walked the most steps, while Monday had a significantly lower number of steps taken. 
 
+![Average time asleep per weekday](https://github.com/user-attachments/assets/9ab89768-34e0-4971-889b-eca90ef9b7e0)
+
+Comparing the average time asleep and the steps taken, Sunday coincide with having the most time asleep and the least number of steps taken. Aditionally, on Tuesdays people also took a high number of steps while sleeping less time. However, this is not enough evidence to suggest a direct relationship between the variables.
+
+```r
+#Activity level per weekday
+ggplot(Intensity_mean_long, aes(x=Weekday,
+                                y=Mean_Minutes,
+                                fill=Activity_Level))+
+  geom_col()+
+  labs(title="Activity Level per Weekday",
+       x=NULL,
+       y="Minutes")+
+  guides(fill=guide_legend(title="Activity Level"))+
+  scale_fill_discrete(labels=c("Very Active",
+                               "Fairly Active",
+                               "Lightly Active",
+                               "Sedentary"))+
+  geom_text(aes(label=ifelse(Mean_Minutes>100, Daily_Percent, '')), 
+            size=3,
+            hjust=0.5,
+            position=position_stack(vjust=0.5))+
+  geom_text(aes(label=after_stat(y), group=Weekday),
+            stat="summary", fun=sum, vjust=1)
+```
+![Activity Level per Weekday](https://github.com/user-attachments/assets/cf495c41-6deb-405d-9c1e-543c56d754c1) 
+
+Correspondingly with the weekly average step and sleep distribution, Sunday, which recorded the least steps taken and most time in bed, had the highest percentage of time doing sedentary activities (82.6%). On the other side, Saturdays, the first day of the conventional weekend, had the lowest percentage of sedentary activities (79.8%). Other interesting findings is that Mondays had the highest number of minutes recorded, but the second highest percentage of sedentary activities (81.8%). Even though Thursdays had the third highest number of overall  data recorded, it had the lowest minutes of activities recorded. Given that the number of users recorded is the same, it leads to conclude that 1) the overall data difference in overall recordings is due to other variables, like time asleep, and 2) the minutes of activity are dependant on the device's ability to identify a change in the users' heartbeat and blood pressure. 
+
+Now, let's review some variables by hour.
+
+*4.3 Review and plot hourly data*
+
+```r
+#Average Hourly Steps
+hourly_steps %>%
+  group_by(Time) %>%
+  summarise(Average_Steps=mean(StepTotal)) %>%
+  ggplot(aes(x=Time,
+             y=Average_Steps,
+             fill=Average_Steps))+
+  geom_col()+
+  labs(title="Average Step Distribution per Hour",
+       x=NULL,
+       y="Average Steps",
+       fill=NULL)+
+  theme(axis.text.x=element_text(angle=90))+
+  scale_fill_viridis_c()
+```
+![Average Step Distribution per Hour](https://github.com/user-attachments/assets/c8df7818-1627-428a-97db-424d6f6c2f60) 
+
+During the 12 hour "usual" work window, between 7 am and 7 pm, the number of hourly steps stay above 300, with 2 notable high windows: noon to 2 pm, and 5 to 7 pm. As expected, past 7 pm, as the night advances, the number of steps decreases. A significant dropoff exists between midnight and 4 am. Most people wake up between 5 and 7 am. 
+
+![Average Calorie Distribution per Hour](https://github.com/user-attachments/assets/46cff603-42a3-431d-8da7-35a1ae05ac84) 
+
+Similarly to the step distribution, there is a 12 hour window, from 8 am to 8 pm, where users burnt over 100 calories per hour, with notable high windows between noon to 2 pm and 5 to 7 pm. From 8 pm to midnight, there is a progressive decrease in calories burnt, until reaching constant values from midnight to 4 am. These constant values are consistent with the calories burnt during the normal sleeping process.
+
+Next, let's review individual data. 
+
+*4.4 Review and plot individual data*
+
+```r
+#Calories vs Total steps
+ggplot(daily_data, aes(x=TotalSteps,
+                       y=Calories,
+                       color=VeryActiveMinutes))+
+  geom_point()+
+  geom_smooth(method="loess")+
+  scale_color_gradient(low="green", high="red")+
+  labs(title="Calories vs Total Steps per Day",
+       x="Total Steps",
+       caption="Based on daily data")
+```
+![Calories vs Total Steps](https://github.com/user-attachments/assets/c007a76e-4e67-4c28-a00a-736afe8dd37f) 
+
+As predicted, there is a direct positive relationship between calories and steps taken. However, above the tendency line we observe cases where users had a similar amount of burnt calories but a varying number of steps taken. Notably, some users had a very high calories-steps ratio, meaning they burnt many calories while walking few steps. This could be due to either a non-registered high-intensity activity, a difference in the duration and intensity of physical activities (running vs walking 1 mile) or, in less degree, particular physiological conditions. 
+
+There are some outlying cases where users had an exceptionally high number of steps taken but lower calories burned, which could suggest a long but low-intensity activity (like walking at a slow pace); others burned a high amount of calories while taking few steps, which could be associated with stationary but high-energy activities (like a gym workout). 
+Overall, more data is needed into the type of physical activities or sports the users practice, to further identify preffered activities and calories/steps tendencies. 
+
+```r
+#Activity Minutes vs Total steps for each activity level
+ggplot(daily_data)+
+  #Very Active Minutes
+  geom_point(aes(x=TotalSteps,
+                 y=VeryActiveMinutes),
+             color="navy")+ 
+  geom_smooth(method="loess", aes(x=TotalSteps,
+                                  y=VeryActiveMinutes),
+              color="navy")+
+#The full code can be found in the Markdown file
+```
+![Activity Minutes vs Daily Steps](https://github.com/user-attachments/assets/70b5e8fe-30e1-4a8b-8497-210f7e0ac332) 
+
+Most users took less than 15,000 steps per day, regardless of however many minutes they spent at each intensity level. Nevertheless, in accordance with the Activity Level distribution plot, most time was spent in sedentary and lightly active activities. As noticed in the plot, people spent the less time doing fairly active activities. The outlying points refer to user who had few steps but high-intensity activities, or many steps with a lot of time spent in high-intensity activities.
+
+![Activity Minutes vs Calories](https://github.com/user-attachments/assets/2ab762c1-9572-41d1-bc89-750eae0d48f5) 
+
+Similarly to the previous plot, most users burned between 1,500 and 3,500 calories, regardless of however many miutes they spent at each intensity level.
+
+```r
+#Time Asleep vs Sedentary Minutes
+ggplot(daily_data)+
+  geom_point(aes(x=TotalMinutesAsleep,
+                 y=SedentaryMinutes))+
+  geom_smooth(method="loess", aes(x=TotalMinutesAsleep,
+                                  y=SedentaryMinutes))+
+  labs(title="Sleep Time vs Sedentary Minutes",
+       x="Daily Total Minutes Asleep",
+       y="Sedentary Minutes",
+       caption="Based on reported data. NA values not considered")+
+  annotate("text", x=750,
+           y=350,
+           label="italic(R)^2==0.3597",
+           parse=TRUE,
+           size=3)
+```
