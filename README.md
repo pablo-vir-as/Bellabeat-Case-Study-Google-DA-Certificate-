@@ -33,8 +33,6 @@ The dataset is comprised of 18 CSV files. A ROCCC analysis of the data is possib
 **C** - Current: **LOW**. The data is from 8 years ago, and has not been updated since. The results derived from the analysis will not reflect the current trends.
 
 **C** - Cited: **MED**. The data's origin is clearly stated, but as a public, third-party provided dataset, the possibility of uncited changes is to be taken into account.
-![Data recorded per weekday](https://github.com/user-attachments/assets/7b5332b6-1ec2-445c-a8b7-f7de477f2009)
-![Average steps taken per weekday](https://github.com/user-attachments/assets/c88b914d-dcc5-4cbe-8aa3-476f9cf70aca) 
 ![Average time asleep per weekday](https://github.com/user-attachments/assets/c423670f-d599-4a46-9c13-19ad8ec98f76) 
 ![High Activity minutes per day of week](https://github.com/user-attachments/assets/fa686a53-4427-4ae7-99e7-7d1c98d46112) 
 ![Activity Level per Weekday](https://github.com/user-attachments/assets/cf495c41-6deb-405d-9c1e-543c56d754c1) 
@@ -218,6 +216,28 @@ ggplot(daily_data, aes(x=Weekday))+
             size=3,
             position=position_stack(vjust=1.05))
 ```
+![Data recorded per weekday](https://github.com/user-attachments/assets/7b5332b6-1ec2-445c-a8b7-f7de477f2009)
 
+Based on this plot, we notice that data recordings are significantly higher from Tuesdays to Thursdays, while the rest of the week keep a consistent number of recordings. This brings up the question of the reason behind this. However, given the data's third-party origin, it will be hard to find proof to make our speculations any more than that. Therefore, the results in this analysis should not be taken as absolute and definitive. This discovery further confirms the need to make a future analysis with more recent and realiable data. 
+
+Other relevant weekly data:
+
+```r
+#Average steps per weekday
+daily_data %>%
+  group_by(Weekday) %>%
+  summarise(Mean_Steps=mean(TotalSteps)) %>%
+  ggplot(aes(x=Weekday,
+             y=Mean_Steps))+
+  geom_col(fill="lightblue")+
+  labs(title="Average steps taken per weekday",
+       x=NULL,
+       y="Average Steps")+
+  geom_text(aes(label=ceiling(Mean_Steps)),
+            size=3,
+            hjust=0.5,
+            position=position_stack(vjust=1.05))
+```
+![Average steps taken per weekday](https://github.com/user-attachments/assets/c88b914d-dcc5-4cbe-8aa3-476f9cf70aca) 
 
 
