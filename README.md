@@ -33,8 +33,6 @@ The dataset is comprised of 18 CSV files. A ROCCC analysis of the data is possib
 **C** - Current: **LOW**. The data is from 8 years ago, and has not been updated since. The results derived from the analysis will not reflect the current trends.
 
 **C** - Cited: **MED**. The data's origin is clearly stated, but as a public, third-party provided dataset, the possibility of uncited changes is to be taken into account.
-![Sleep Time vs Sedentary Minutes](https://github.com/user-attachments/assets/4cb49a23-d983-4901-a401-c5657ef93fd8) 
-![User Distribution based on Activity Level](https://github.com/user-attachments/assets/e2f64542-d6a4-4694-8d31-2371797b0a9d) 
 
 
 ## Stage 3 - Process
@@ -351,3 +349,106 @@ ggplot(daily_data)+
            parse=TRUE,
            size=3)
 ```
+![Sleep Time vs Sedentary Minutes](https://github.com/user-attachments/assets/4cb49a23-d983-4901-a401-c5657ef93fd8) 
+
+It seems logical that a relationship could be possible between sleep time and sedentary minutes, as they relate to each other. Therefore, by plotting both variables, we look to find evidence to this assumption. Just based on the plot, there seems to be a downward tendency of minutes asleep and sedentary activities. However, confirmation is needed via a linear regression analysis. 
+
+```r
+#Linear Regression analysis for Time Asleep vs Sedentary Minutes
+Asleep_vs_Sedentary <- lm(TotalMinutesAsleep ~ SedentaryMinutes, data=daily_data)
+
+summary(Asleep_vs_Sedentary)
+```
+
+According to the analysis, the R squared value (0.3597) is too low to indicate a correlation between the variables. Therefore, and contrary to the original assumption, there is no more minutes asleep do not translate to more sedentary activities, despite the general tendency shown in the plot.
+
+Next, let's review the types of users in the data
+
+*4.5 Review user distribution based on activity levels*
+
+Based on a research study by Catrine Tudor-Locke and David Bassett Jr (insert link), who propose an index for classification of physical activity based on pedometer measurements, we can, for analysis purposes, establish a classification that fits the four activity levels available in our data.
+
+ less than 5,000 steps/day – Sedentary Lifestyle
+
+ 5,000 - 7,499 steps/day – Lightly Active Lifestyle
+
+ 7,500 - 10,000 steps/day – Fairly Active Lifestyle
+
+ more than 10,000 steps/day – Very Active Lifestyle
+
+Guided by this classification, how many users are in each class? 
+
+```r
+#Creating a data frame with average individual data
+average_individual_data <- daily_data %>%
+  group_by(Id) %>%
+  summarise(av_steps=mean(TotalSteps),
+            av_calories=mean(Calories),
+            av_sleep=mean(TotalMinutesAsleep, na.rm=TRUE))
+
+#Classifying users by level of intensity based on average daily steps
+average_individual_data <- average_individual_data %>%
+  mutate(user_class=case_when(
+    av_steps < 5000 ~ "Sedentary",
+    av_steps >= 5000 & av_steps < 7500 ~ "Lightly Active",
+    av_steps >= 7500 & av_steps < 10000 ~ "Fairly Active",
+    av_steps >= 10000 ~ "Very Active"))
+
+#Checking the percentage of users in each class 
+user_activity_class <- average_individual_data %>%
+  group_by(user_class) %>%
+  summarise(user_count=n()) %>%
+  mutate(user_percentage=user_count/sum(user_count)*100)
+
+user_activity_class$user_percentage=paste0(sprintf("%2.1f", user_activity_class$user_percentage), "%")
+
+#Plotting activity class percentage
+ggplot(user_activity_class, aes(x="",
+                                y=user_percentage,
+                                fill=user_class))+
+  geom_col()+
+  coord_polar("y", start=0)+
+  geom_text(aes(label=user_percentage),
+            position=position_stack(vjust=0.5),
+            size=3)+
+  guides(fill=guide_legend(title="User Class"))+
+  scale_fill_discrete(breaks=c("Lightly Active",
+                               "Fairly Active",
+                               "Sedentary",
+                               "Very Active"))+
+  theme_void()
+```
+![User Distribution based on Activity Level](https://github.com/user-attachments/assets/e2f64542-d6a4-4694-8d31-2371797b0a9d) 
+
+We notice that most users are lightly active or fairly active, meaning they take between 5,000 and 10,000 daily steps. The rest of the users are either sedentary or very active. The mostly equal distribution of users is due to the low number of unique users (30). 
+
+*4.6 Data Frames Summary*
+
+Finally, to better keep track of the data used in this analysis, next is presented a summary of the original data frames and the ones created throughout the analysis. 
+
+```r
+project_data_frames <- data.frame(Initial_data_frames=c("daily_activity", "daily_calories", "daily_intensities", "daily_steps", "hourly_calories", "hourly_steps", "sleep", "weight","","",""), Final_data_frames=c("daily_activity", "daily_calories", "daily_intensities", "daily_steps", "hourly_calories", "hourly_steps", "sleep", "average_individual_data", "daily_data", "Intensity_mean", "Intensity_mean_long"))
+library(knitr)
+
+kable(project_data_frames, caption="Data frames summary")
+```
+
+| Initial data frames | Final data frames |
+|:---:|:---:|
+| daily_activity | daily_activity |
+| daily_calories | daily_calories |
+| daily_intensities | daily_intensities |
+| daily_steps | daily_steps | 
+| hourly_steps | hourly_steps | 
+| sleep | sleep |
+| weight | average_individual_data |
+| | daily_data |
+| | Intensity_mean | 
+| | Intensity_mean_long |
+
+## Stage 5. Share 
+
+
+## Stage 6. Act
+
+**Final Recommendations**
