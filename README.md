@@ -451,4 +451,28 @@ kable(project_data_frames, caption="Data frames summary")
 
 ## Stage 6. Act
 
+Analyze the smart device usage data of non-Bellabeat users to gain insight into the current usage trends. Using this data, create high-level recommendations applied to one Bellabeat product that will guide the company's marketing strategy. 
+
+Based on the analysis performed with the available data, the following insights into the current usage trends were found, and in consequence, some final high-level recommendations for Bellabeat´s marketing strategy are made. 
+
+
+**What are the current usage trends?**
+- Most users are lightly active or fairly active, meaning they take bewtween 5k and 10k daily steps.
+- Saturdays are the most active day, with the least percentage of sedentary time, while Sundays have the highest percentage of sedentary time recorded by users.
+- People sleep the most on Sundays and Wednesdays.
+- Majority of people wake up after 6 am, and go to bed after 11 pm.
+- People are most active (measured by steps taken and calories burnt) between 5 and 7 pm, and between noon and 2 pm.
+- Before noon and after 3 pm, people spend long sedentary times, with a constant number of steps taken per hour. 
+
 **Final Recommendations**
+
+1. The data used for this analysis may not accurately reflect the current trends. Given that Bellabeat's products are thought for and designed for women, I recommend obtaining more data that is recent, and which considers socioeconomical factors, such as gender, location and age.
+
+2. Simplify the weight tracking features in the "Leaf" tracker, as not enough people manually enter their data.
+
+3. Promote a special campaign that encourages women to do lightly active or higher activities on Sundays, such as point-based reward system or weekly streaks rewards.
+
+4. Include a dietary program to sync with people's workout regimes. During weekdays, people are most active around lunch and before dinner.
+
+5. The "Leaf" tracker can include a reminder function that encourages people to walk for a few minutes after long periods of inactivity, and to go to bed if active after 11 pm.
+
