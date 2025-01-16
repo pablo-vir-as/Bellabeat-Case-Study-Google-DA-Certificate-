@@ -450,8 +450,7 @@ kable(project_data_frames, caption="Data frames summary")
 
 The dashboard for this project was made using Tableau Public and is available as [Bellabeat Case Study (Google Capstone)](https://public.tableau.com/views/BellabeatCaseStudyGoogleCapstone/BellabeatCaseStudyGoogleCapstone?:language=es-ES&:sid=&:redirect=auth&:display_count=n&:origin=viz_share_link)
 
-<div class='tableauPlaceholder' id='viz1737055379430' style='position: relative'><noscript><a href='#'><img alt='Bellabeat Case Study (Google Capstone) ' src='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Be&#47;BellabeatCaseStudyGoogleCapstone&#47;BellabeatCaseStudyGoogleCapstone&#47;1_rss.png' style='border: none' /></a></noscript><object class='tableauViz'  style='display:none;'><param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' /> <param name='embed_code_version' value='3' /> <param name='site_root' value='' /><param name='name' value='BellabeatCaseStudyGoogleCapstone&#47;BellabeatCaseStudyGoogleCapstone' /><param name='tabs' value='no' /><param name='toolbar' value='yes' /><param name='static_image' value='https:&#47;&#47;public.tableau.com&#47;static&#47;images&#47;Be&#47;BellabeatCaseStudyGoogleCapstone&#47;BellabeatCaseStudyGoogleCapstone&#47;1.png' /> <param name='animate_transition' value='yes' /><param name='display_static_image' value='yes' /><param name='display_spinner' value='yes' /><param name='display_overlay' value='yes' /><param name='display_count' value='yes' /><param name='language' value='es-ES' /></object></div>              
-
+![Bellabeat Tableau Dashboard](https://github.com/user-attachments/assets/2f7cc5a8-7dd6-4d65-8715-87efb55bfbfe)
 ## Stage 6. Act
 
 Analyze the smart device usage data of non-Bellabeat users to gain insight into the current usage trends. Using this data, create high-level recommendations applied to one Bellabeat product that will guide the company's marketing strategy. 
